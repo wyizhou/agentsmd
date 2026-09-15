@@ -29,6 +29,8 @@
 | [subagent-templates/planner.md](./subagent-templates/planner.md) | Planner 任务模板，用于首次规划或规划调整。 |
 | [subagent-templates/developer.md](./subagent-templates/developer.md) | Developer 任务模板，用于正常开发或问题修复。 |
 | [subagent-templates/validator.md](./subagent-templates/validator.md) | Validator 任务模板，用于首次验证、问题复现或修复后复验。 |
+| [references/](./references/README.md) | AI 整理的接口等文档摘要，注明来源、日期和待核内容。 |
+| [skills/](./skills/README.md) | 完整项目技能包及配套脚本、模板和资料。 |
 | [README.md](./README.md) | 仓库说明、使用方法与 MIT 授权。 |
 
 ## 使用方法
@@ -52,6 +54,10 @@ git clone https://github.com/wyizhou/agentsmd.git
 ├── MEMORY.md
 ├── exec-plans/
 │   └── template.md
+├── references/
+│   └── README.md
+├── skills/
+│   └── README.md
 └── subagent-templates/
     ├── planner.md
     ├── developer.md
