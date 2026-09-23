@@ -85,6 +85,18 @@ git clone https://github.com/wyizhou/agentsmd.git
 
 后续的规划、任务分派、验证和项目记录由主 Agent 按约定组织，详细规则见 [AGENTS.md](./AGENTS.md)。
 
+首次使用时，按实际工具选择下方可选接入：Pi 使用 `.pi/`，ChatGPT 桌面 App 中的 Codex 任务可使用 `.codex/agents/`；两者均可按角色设置模型和推理等级，但角色配置互不通用，普通 ChatGPT 聊天不加载这些 Codex 角色文件。
+
+## 可选接入：Codex 三角色
+
+此适配用于 ChatGPT 桌面 App 中的 Codex 任务，不适用于普通 ChatGPT 聊天；Pi 的角色配置见下一节。它只提供项目级子 Agent 角色，不替代通用任务模板和 [AGENTS.md](./AGENTS.md) 的协作规则。
+
+用于已有项目时，将隐藏目录 `.codex/agents/` 中的 [agentsmd_planner.toml](./.codex/agents/agentsmd_planner.toml)、[agentsmd_developer.toml](./.codex/agents/agentsmd_developer.toml)、[agentsmd_validator.toml](./.codex/agents/agentsmd_validator.toml) 显式复制到目标项目的 `.codex/agents/`，保持这三个文件名；普通 `*` 复制可能漏掉隐藏目录。已有同名角色文件时先核对并整合，避免覆盖自定义内容。三个角色分别用于规划、开发和独立验证；从受信任的项目启动新的 Codex 任务，核对角色是否可用并实际派发验证。项目级配置仅在项目受信任时加载。
+
+三个 TOML 文件中的 `model` 和 `model_reasoning_effort` 都只是注释示例，默认不生效。需要为某个角色固定值时，在该角色文件中按需取消注释并改为当前可用的模型及兼容等级；示例使用 `gpt-6-astra` 和 `xhigh`，不要求其他模型也支持该等级。未启用角色文件中的这两项时，每一项按“当次派发显式值 → `[agents]` 中对应的 `default_subagent_model` / `default_subagent_reasoning_effort` → 主 Agent 当前值”解析；若当次派发或 `[agents]` 默认值指定了模型而未指定推理等级，使用该模型的默认等级。取消注释后的角色文件值优先于当次派发值，因此希望当次自由选择时应保持对应行注释。本仓库不提供 `.codex/config.toml`，不会设置子 Agent 的全局默认模型。
+
+配置依据：[Codex 子 Agent 文档](https://learn.chatgpt.com/docs/agent-configuration/subagents)、[GPT-6 Astra 模型文档](https://developers.openai.com/api/docs/models/gpt-6-astra)。
+
 ## 可选接入：Pi 三角色
 
 仅在使用 Pi 时按需接入；其他 AI 环境继续使用通用层，不要求安装或检查此适配。它不替代 [AGENTS.md](./AGENTS.md) 的协作流程，也不会覆盖内置角色。
