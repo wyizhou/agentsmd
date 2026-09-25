@@ -103,8 +103,8 @@ git clone https://github.com/wyizhou/agentsmd.git
 
 ### 复制与加载
 
-1. 用于已有项目时，显式复制隐藏目录 `.pi/` 中的以下文件到项目根目录（普通 `*` 复制可能漏掉隐藏文件）：[APPEND_SYSTEM.md](./.pi/APPEND_SYSTEM.md)、[settings.json](./.pi/settings.json)、[planner.md](./.pi/agents/planner.md)、[developer.md](./.pi/agents/developer.md)、[validator.md](./.pi/agents/validator.md) 和 [.gitignore](./.pi/.gitignore)，保持目录结构。仅复制这些适配文件，不复制运行产物 `.pi/subagents/`；忽略规则也仅针对该目录。
-2. 已有 `.pi/settings.json` 时按键合并 `subagents.agentOverrides`，逐项保留或确认已有自定义，不能整份覆盖。已有 APPEND 或同名角色先核对并整合。项目 APPEND 优先于全局同名文件，**不是两份自动叠加**。
+1. 用于已有项目时，显式复制隐藏目录 `.pi/` 中的以下文件到项目根目录（普通 `*` 复制可能漏掉隐藏文件）：[APPEND_SYSTEM.md](./.pi/APPEND_SYSTEM.md)、[planner.md](./.pi/agents/planner.md)、[developer.md](./.pi/agents/developer.md)、[validator.md](./.pi/agents/validator.md) 和 [.gitignore](./.pi/.gitignore)，保持目录结构。仅复制这些适配文件，不复制运行产物 `.pi/subagents/`；忽略规则也仅针对该目录。本仓库不再附带 `.pi/settings.json`。配置这三个角色时，不要复制该文件，也不要按键合并它。
+2. 已有 APPEND 或同名角色先核对并整合，不能整份覆盖。项目 APPEND 优先于全局同名文件，**不是两份自动叠加**。
 3. 需要 `pi-subagents` 扩展。确认未安装时，由用户安装或明确授权后执行 `pi install npm:pi-subagents`；本仓库不配置自动安装。接口不可见也可能是未启用、未加载或工具受限，先查明原因，不自动改全局设置。
 4. 从项目根目录启动 Pi，并由用户确认是否信任项目；不绕过信任。安装或外部修改角色/设置后 `/reload` 并重新核对实际映射；若修改的是 `/trust` 保存的信任决定，须重启，`/reload` 不能替代。APPEND 按当前 cwd 加载，角色/设置的最近项目根发现是另一套逻辑，不能依赖从子目录启动也读到根 APPEND。
 
@@ -112,30 +112,26 @@ git clone https://github.com/wyizhou/agentsmd.git
 
 ### 模型与推理配置
 
-实际 `.pi/settings.json` 只为这三个完整角色名设置 `model: "inherit"`，不改主对话默认或内置角色。可在各角色条目内修改 `model`、添加 `thinking`，例如将 Developer 条目改为：
-
-```json
-"agentsmd.developer": { "model": "inherit", "thinking": "medium" }
-```
-
-这是现有 JSON 对象中的条目，不是完整设置文件。JSON 不支持注释，也没有 `thinking: "inherit"`。另一种方式是取消角色 YAML 中独立一行的注释：
+三个角色默认仍是 `model: inherit`，不改主对话默认或内置角色。要改某个角色，只改该角色 frontmatter 的 `model` 和 `thinking`。模型用注册表中的精确 `provider/id`，可带受支持的 `:level`。取消 thinking 注释后生效；注释保持时不生效。省略 thinking 不继承主会话当前等级。示例仍用注释，不要照抄占位名称：
 
 ```yaml
 model: inherit
 # thinking: high
 ```
 
-Planner / Validator 提供 `high` 注释示例，Developer 提供 `medium`；注释默认不生效。模型字符串可用实际注册表中的精确 `provider/id`，也可带受支持的 `:level` 后缀，不要照抄占位名称。
+Planner / Validator 提供 `high` 注释示例，Developer 提供 `medium`；注释默认不生效。
 
-优先级要按实际来源核对：本次派发覆盖最优先；settings 同字段覆盖角色 YAML，项目同字段覆盖用户，同一 settings 来源内 provider-scoped override 覆盖普通角色 override。`subagents.defaultModel` / `defaultThinking` 只填角色缺失项；本适配显式 `model: inherit` 不会被 defaultModel 替换，项目 settings 的同名 model 也会覆盖用户设置或 YAML 中的固定模型。取消 YAML thinking 注释后，如 settings 已显式设置该字段，仍以 settings 为准。合法模型后缀优先于独立 thinking。
+当次派发最优先。项目或用户 settings 里同名 `agentOverrides` 或 provider-scoped override 的同字段仍覆盖角色 YAML。本适配不再用项目 settings 强制 inherit。用户级 `subagents.defaultModel` 不会替换已写明的 `model: inherit`。取消 thinking 注释后，若项目或用户 settings 已显式设置同一字段，仍以该字段为准。以前复制过旧项目 settings 的人，改角色文件前先核对实际来源；本仓库不再提供该文件，也不要求为这三个角色复制或按键合并它。
 
-默认模型由扩展原生继承；**省略 thinking 不保证继承主会话当前等级**。无明确推理策略时，APPEND 约定主 Agent 当次读取主会话 `PI_REASONING_LEVEL`，保留已解析精确模型，用派发 model 后缀补齐，不写回配置。角色 thinking、模型后缀、子 Agent 默认、provider overrides、显式清除/禁用及模型能力/上限等策略优先；`thinking: false` 不等于 `off`，`models` 显示 `default` 也不证明无人配置。未知或不兼容须查明或停止受影响派发，不能猜测或静默降级；工具顶层 thinking 不是派发参数。这是提示约定，不是程序保证，真实生效仍需启动证据。
+依据已安装 pi-subagents 0.70.0 的 models 文档（2026-09-25 只读核对，不是本轮真实启动验证）：项目同字段覆盖用户；同一 settings 内 provider-scoped override 覆盖普通角色 override；`defaultThinking` 只填缺失项；合法 `:level` 优先于独立 thinking；`thinking: false` 不等于 `off`。`models` 显示 `default` 也不证明无人配置。
+
+默认 `model: inherit` 由扩展解析为当前会话模型。省略 thinking 不继承主会话当前等级。无明确推理策略时，APPEND 约定主 Agent 当次读取主会话 `PI_REASONING_LEVEL`，保留已解析精确模型，用派发 model 后缀补齐，不写回配置。这是提示约定，不是程序保证，也不是角色文件自动继承当前等级。角色 thinking、模型后缀、子 Agent 默认、provider overrides、显式清除/禁用及模型能力/上限等策略优先。未知或不兼容须查明或停止受影响派发，不能猜测或静默降级；工具顶层 thinking 不是派发参数。真实生效仍需启动证据。
 
 ### 角色边界
 
 主 Agent 首次按通用任务模板给齐材料，每次显式 fresh、全新实例，不 fork/resume/追加任务，子角色不调度或做安装引导。默认继承项目规则、不继承全局 AGENTS 类上下文，不启用角色持久记忆；不意味着屏蔽全局配置或全部扩展。Planner / Validator 的 read-only 标签不是沙箱；Validator 的写工具仅用于任务授权的隔离测试和证据，受审内容仍须冻结。浏览器等扩展工具须另行核对白名单及提供方，缺少时不能跳过验收。
 
-接口核对依据：Pi 核心 0.86.0 的 README、settings / environment-variables 文档及 ResourceLoader；pi-subagents 0.70.0 的 agents / models / configuration / tool-reference / workflows 文档与实际解析器（2026-09-20）。版本变化须重新检查，不代表所有版本或真实启动均已验证。
+接口核对依据：2026-09-25 只读核对已安装 Pi 核心 0.86.1 的版本与变更说明（该版未见 settings 解析改动），以及 pi-subagents 0.70.0 的 models 文档和覆盖解析实现。先前 2026-09-20 对 Pi 核心 0.86.0 README、settings / environment-variables 文档、ResourceLoader，以及 pi-subagents 0.70.0 其余指定文档的核对，本轮没有重做。版本变化须重新检查，不代表所有版本或真实启动均已验证。
 
 ## MIT 授权
 
